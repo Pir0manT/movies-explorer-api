@@ -1,0 +1,101 @@
+version: '3.3'
+services:
+
+  backend:
+    build:
+      context: .
+    container_name: movexp-backend
+    image: movexp/backend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET}
+      - BASE_URL=${SITE_BASE_URL}
+      - MAX_AUTH_ATTEMPTS=${MAX_AUTH_ATTEMPTS}
+      - LOGGER_BASE_URL=http://loki:3100
+      - DB_PATH=mongodb://mongo:27017/mestodb
+    networks:
+      - express-mongo
+      - react-express
+      - grafana-loki
+    depends_on:
+      - mongo
+      - loki
+    ports:
+      - "3000:3000"
+
+  mongo:
+    restart: always
+    image:  mongo:4.4-focal
+    container_name: movexp-mongodb
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - express-mongo
+    expose:
+      - 27017
+
+  loki:
+    build:
+      context: loki
+      dockerfile: Dockerfile
+    container_name: movexp-loki
+    image: movexp/loki
+    restart: always
+    expose:
+      - 3100
+    volumes:
+      - loki_data:/tmp
+    command: -config.file=/etc/loki/loki-config.yaml
+    networks:
+      - grafana-loki
+
+
+  grafana:
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+#      - GF_AUTH_ANONYMOUS_ENABLED=true
+#      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SERVER_ROOT_URL=${SITE_BASE_URL}/logs/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    depends_on:
+      - loki
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy
+          orgId: 1
+          url: http://loki:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: false
+        EOF
+        /run.sh
+    image: grafana/grafana:latest
+    container_name: movexp-grafana
+    restart: always
+    expose:
+      - 3000
+    networks:
+      - grafana-loki
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+
+networks:
+  express-mongo:
+  react-express:
+  grafana-loki:
+
+volumes:
+  mongodb:
+  loki_data:
+  grafana_data:
