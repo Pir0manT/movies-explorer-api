@@ -1,5 +1,5 @@
-const Movies = require('../models/movie')
-const { handleError, FORBIDDEN, StatusCodeError } = require('../utils/errors')
+const { Movies } = require('../models/movie')
+const { handleError } = require('../utils/errors')
 
 const getMovies = (req, res, next) =>
   Movies.find({ owner: req.user._id })

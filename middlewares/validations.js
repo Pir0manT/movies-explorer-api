@@ -1,11 +1,10 @@
 const { celebrate, Joi } = require('celebrate')
+const { isURL } = require('validator')
+const { errorMsg } = require('../models/movie')
 const { BAD_REQUEST, StatusCodeError } = require('../utils/errors')
 
-const reIsUrl =
-  /^(https?:\/\/)(www\.)?(?!-)[-a-zA-Z0-9@:%._~#=]{1,249}(?<!-)\.[A-Za-z]{2,6}([-a-zA-Z0-9._~:/?#[\]@!$&'()*+,;=]*)#?$/
-
 const validationUrl = (url) => {
-  if (reIsUrl.test(url)) {
+  if (isURL(url)) {
     return url
   }
   throw new StatusCodeError(BAD_REQUEST)
@@ -54,17 +53,44 @@ const validationUpdateUser = celebrate({
   }),
 })
 
-const validationId = (schema = 'cardId') =>
+const validationId = (schema = 'movieId') =>
   celebrate({
     params: Joi.object().keys({
-      [schema]: Joi.string().required().hex().length(24),
+      [schema]: Joi.number()
+        .required()
+        .min(1)
+        .message('Передан некорректный id фильма'),
     }),
   })
 
-const validationCreateCard = celebrate({
+const validationCreateMovie = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().required().custom(validationUrl),
+    country: Joi.string().required().min(1).message(errorMsg('страна')),
+    director: Joi.string().required().min(1).message(errorMsg('режиссёр')),
+    duration: Joi.number().required().min(1).message(errorMsg('длительность')),
+    year: Joi.string().required().min(1).message(errorMsg('год выпуска')),
+    description: Joi.string().required().min(1).message(errorMsg('описание')),
+    image: Joi.string()
+      .required()
+      .custom(validationUrl)
+      .message(errorMsg('постер')),
+    trailerLink: Joi.string()
+      .required()
+      .custom(validationUrl)
+      .message(errorMsg('трейлер')),
+    thumbnail: Joi.string()
+      .required()
+      .custom(validationUrl)
+      .message(errorMsg('"thumbnail"')),
+    movieId: Joi.number().required().min(1).message(errorMsg('"movieId"')),
+    nameRU: Joi.string()
+      .required()
+      .min(1)
+      .message(errorMsg('русское название фильма')),
+    nameEN: Joi.string()
+      .required()
+      .min(1)
+      .message(errorMsg('английское название фильма')),
   }),
 })
 
@@ -73,5 +99,5 @@ module.exports = {
   validationCreateUser,
   validationUpdateUser,
   validationId,
-  validationCreateCard,
+  validationCreateMovie,
 }

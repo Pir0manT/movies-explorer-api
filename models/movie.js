@@ -1,31 +1,33 @@
 const mongoose = require('mongoose')
-const { isURL } = require('validator')
+const isURL = require('validator/lib/isURL')
+
+const errorMsg = (fieldName) => `Поле ${fieldName} должно быть заполнено`
 
 const movieSchema = new mongoose.Schema(
   {
     country: {
       type: String,
-      required: [true, 'Поле страна должно быть заполнено'],
+      required: [true, errorMsg('страна')],
     },
     director: {
       type: String,
-      required: [true, 'Поле режиссёр должно быть заполнено'],
+      required: [true, errorMsg('режиссёр')],
     },
     duration: {
       type: Number,
-      required: [true, 'Поле длительность должно быть заполнено'],
+      required: [true, errorMsg('длительность')],
     },
     year: {
       type: String,
-      required: [true, 'Поле год выпуска должно быть заполнено'],
+      required: [true, errorMsg('год выпуска')],
     },
     description: {
       type: String,
-      required: [true, 'Поле описание должно быть заполнено'],
+      required: [true, errorMsg('описание')],
     },
     image: {
       type: String,
-      required: [true, 'Поле постер должно быть заполнено'],
+      required: [true, errorMsg('постер')],
       validate: {
         validator: (v) => isURL(v),
         message: 'Некорректный URL',
@@ -33,39 +35,41 @@ const movieSchema = new mongoose.Schema(
     },
     trailerLink: {
       type: String,
-      required: [true, 'Поле трейлер должно быть заполнено'],
+      required: [true, errorMsg('трейлер')],
       validate: {
-        validator: (v) => isURL(v),
+        validator: isURL,
         message: 'Некорректный URL',
       },
     },
     thumbnail: {
       type: String,
-      required: [true, 'Поле "thumbnail" должно быть заполнено'],
+      required: [true, errorMsg('"thumbnail"')],
       validate: {
-        validator: (v) => isURL(v),
+        validator: isURL,
         message: 'Некорректный URL',
       },
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'user',
-      required: [true, 'Поле владелец должно быть заполнено'],
+      required: [true, errorMsg('владелец')],
     },
     movieId: {
       type: Number,
-      required: [true, 'Поле "movieId" должно быть заполнено'],
+      required: [true, errorMsg('"movieId"')],
     },
     nameRU: {
       type: String,
-      required: [true, 'Поле русское название фильма должно быть заполнено'],
+      required: [true, errorMsg('русское название фильма')],
     },
     nameEN: {
       type: String,
-      required: [true, 'Поле английское название фильма должно быть заполнено'],
+      required: [true, errorMsg('английское название фильма')],
     },
   },
   { versionKey: false }
 )
 
-module.exports = mongoose.model('movie', movieSchema)
+const Movies = mongoose.model('movie', movieSchema)
+
+module.exports = { Movies, errorMsg }
