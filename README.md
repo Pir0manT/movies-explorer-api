@@ -40,7 +40,7 @@ Docker.
 
     git clone https://github.com/Pir0manT/movies-explorer-api.git
 
-Переименуйте файй .env.example в .env, откройте в редакторе и внесите необходимые значения,
+Переименуйте файл .env.example в .env, откройте в редакторе и внесите необходимые значения,
 следуя подсказкам в комментариях
 
 Запустите приложение командой:
@@ -72,3 +72,22 @@ Docker.
     password: admin
 
 При первом входе в Grafana не забудьте изменить пароль по умолчанию на собственный!
+
+## Языки:
+- JavaScript
+
+## Библиотеки:
+- Express
+
+## База данных:
+- MongoDB
+
+## Чеклист Дипломной работы:
+- [Критерии диплома веб-разработчика](https://code.s3.yandex.net/web-developer/static/new-program/web-diploma-criteria-2.0/index.html#backend)
+
+
+
+## Ссылки:
+- Backend https://api-movexp.top61.ru/
+- IP 95.31.196.116
+- GitHub https://github.com/Pir0manT/movies-explorer-api
