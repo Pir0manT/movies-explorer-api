@@ -1,23 +1,25 @@
 const mongoose = require('mongoose')
-const isEmail = require('validator/lib/isEmail')
+const { isEmail } = require('validator')
 const bcrypt = require('bcryptjs')
-const { UNAUTHORIZED, StatusCodeError } = require('../utils/errors')
+const { UnauthorizedError } = require('../utils/errors')
+const { DEFAULT_ERROR_MESSAGES } = require('../utils/consts')
+const { VALIDATION_MESSAGES } = require('../utils/consts')
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Поле "name" должно быть заполнено'],
-      minlength: [2, 'Минимальная длина поля "name" - 2'],
-      maxlength: [30, 'Максимальная длина поля "name" - 30'],
+      required: [true, VALIDATION_MESSAGES.USER],
+      minlength: [2, VALIDATION_MESSAGES.USER],
+      maxlength: [30, VALIDATION_MESSAGES.USER],
     },
     email: {
       type: String,
       required: true,
       unique: true,
       validate: {
-        validator: (email) => isEmail(email),
-        message: 'Некорректый адрес почты',
+        validator: isEmail,
+        message: VALIDATION_MESSAGES.EMAIL.BAD,
       },
     },
     password: {
@@ -36,13 +38,13 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     .then((user) => {
       if (!user) {
         return Promise.reject(
-          new StatusCodeError(UNAUTHORIZED, 'Invalid email or password')
+          new UnauthorizedError(DEFAULT_ERROR_MESSAGES.BAD_CREDENTIALS)
         )
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
           return Promise.reject(
-            new StatusCodeError(UNAUTHORIZED, 'Invalid email or password')
+            new UnauthorizedError(DEFAULT_ERROR_MESSAGES.BAD_CREDENTIALS)
           )
         }
         return user

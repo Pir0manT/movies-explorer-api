@@ -1,70 +1,69 @@
 const mongoose = require('mongoose')
 const isURL = require('validator/lib/isURL')
-
-const errorMsg = (fieldName) => `Поле ${fieldName} должно быть заполнено`
+const { VALIDATION_MESSAGES } = require('../utils/consts')
 
 const movieSchema = new mongoose.Schema(
   {
     country: {
       type: String,
-      required: [true, errorMsg('страна')],
+      required: [true, VALIDATION_MESSAGES.COUNTRY],
     },
     director: {
       type: String,
-      required: [true, errorMsg('режиссёр')],
+      required: [true, VALIDATION_MESSAGES.DIRECTOR],
     },
     duration: {
       type: Number,
-      required: [true, errorMsg('длительность')],
+      required: [true, VALIDATION_MESSAGES.DURATION],
     },
     year: {
       type: String,
-      required: [true, errorMsg('год выпуска')],
+      required: [true, VALIDATION_MESSAGES.YEAR],
     },
     description: {
       type: String,
-      required: [true, errorMsg('описание')],
+      required: [true, VALIDATION_MESSAGES.DESCRIPTION],
     },
     image: {
       type: String,
-      required: [true, errorMsg('постер')],
+      required: [true, VALIDATION_MESSAGES.POSTER],
       validate: {
-        validator: (v) => isURL(v),
-        message: 'Некорректный URL',
+        validator: isURL,
+        message: VALIDATION_MESSAGES.BAD_URL,
       },
     },
     trailerLink: {
       type: String,
-      required: [true, errorMsg('трейлер')],
+      required: [true, VALIDATION_MESSAGES.TRAILER],
       validate: {
         validator: isURL,
-        message: 'Некорректный URL',
+        message: VALIDATION_MESSAGES.BAD_URL,
       },
     },
     thumbnail: {
       type: String,
-      required: [true, errorMsg('"thumbnail"')],
+      required: [true, VALIDATION_MESSAGES.THUMBNAIL],
       validate: {
         validator: isURL,
-        message: 'Некорректный URL',
+        message: VALIDATION_MESSAGES.BAD_URL,
       },
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'user',
-      required: [true, errorMsg('владелец')],
+      required: [true, VALIDATION_MESSAGES.OWNER],
     },
     movieId: {
-      type: Number,
-      required: [true, errorMsg('"movieId"')],
+      type: mongoose.Schema.Types.ObjectId,
+      required: [true, VALIDATION_MESSAGES.MOVIE_ID],
     },
     nameRU: {
       type: String,
-      required: [true, errorMsg('русское название фильма')],
+      required: [true, VALIDATION_MESSAGES.NAME_RU],
     },
     nameEN: {
       type: String,
-      required: [true, errorMsg('английское название фильма')],
+      required: [true, VALIDATION_MESSAGES.NAME_EN],
     },
   },
   { versionKey: false }
@@ -72,4 +71,4 @@ const movieSchema = new mongoose.Schema(
 
 const Movies = mongoose.model('movie', movieSchema)
 
-module.exports = { Movies, errorMsg }
+module.exports = { Movies }

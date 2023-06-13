@@ -1,14 +1,13 @@
 const { createLogger, transports, format } = require('winston')
 const LokiTransport = require('winston-loki')
-
-const { NODE_ENV, LOGGER_BASE_URL = 'http://localhost:3100' } = process.env
+const { LOGGER_BASE_URL, NODE_ENV } = require('../utils/config')
 
 const logger = createLogger({
   transports: [
     NODE_ENV === 'production'
       ? new LokiTransport({
           host: LOGGER_BASE_URL,
-          labels: { app: 'mesto' },
+          labels: { app: 'movexp' },
           json: true,
           format: format.json(),
           replaceTimestamp: true,

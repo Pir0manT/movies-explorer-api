@@ -1,5 +1,5 @@
 const { Movies } = require('../models/movie')
-const { handleError } = require('../utils/errors')
+const { handleError, ForbiddenError } = require('../utils/errors')
 
 const getMovies = (req, res, next) =>
   Movies.find({ owner: req.user._id })
@@ -18,10 +18,19 @@ const createMovie = (req, res, next) =>
 
 const deleteMovie = (req, res, next) => {
   const { movieId } = req.params
-  return Movies.findOneAndDelete({ owner: req.user._id, movieId })
-    .orFail()
-    .populate(['owner'])
-    .then((movie) => res.send(movie))
+  Movies.find({ movieId })
+    .populate('owner')
+    .then((movies) => {
+      const movieToDelete = movies.find((movie) =>
+        movie.owner._id.equals(req.user._id)
+      )
+      if (movieToDelete) {
+        return movieToDelete.deleteOne().then(() => {
+          res.send(movieToDelete)
+        })
+      }
+      throw new ForbiddenError()
+    })
     .catch((err) => handleError(err, next))
 }
 

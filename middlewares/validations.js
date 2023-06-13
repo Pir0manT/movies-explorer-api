@@ -1,13 +1,14 @@
 const { celebrate, Joi } = require('celebrate')
+const { Types } = require('mongoose')
 const { isURL } = require('validator')
-const { errorMsg } = require('../models/movie')
-const { BAD_REQUEST, StatusCodeError } = require('../utils/errors')
+const { BadRequestError } = require('../utils/errors')
+const { VALIDATION_MESSAGES } = require('../utils/consts')
 
 const validationUrl = (url) => {
   if (isURL(url)) {
     return url
   }
-  throw new StatusCodeError(BAD_REQUEST)
+  throw new BadRequestError()
 }
 
 const validationLogin = celebrate({
@@ -15,25 +16,23 @@ const validationLogin = celebrate({
     email: Joi.string()
       .required()
       .email()
-      .message('Поле email должно быть заполнено'),
-    password: Joi.string()
-      .required()
-      .min(8)
-      .message('Поле пароль должно быть заполнено'),
+      .message(VALIDATION_MESSAGES.EMAIL.EMPTY),
+    password: Joi.string().required(),
   }),
 })
 
 const validationCreateUser = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
+    name: Joi.string()
+      .required()
+      .min(2)
+      .max(30)
+      .message(VALIDATION_MESSAGES.USER),
     email: Joi.string()
       .required()
       .email()
-      .message('Поле email должно быть заполнено'),
-    password: Joi.string()
-      .required()
-      .min(8)
-      .message('Поле пароль должно быть заполнено'),
+      .message(VALIDATION_MESSAGES.EMAIL.EMPTY),
+    password: Joi.string().required(),
   }),
 })
 
@@ -43,54 +42,69 @@ const validationUpdateUser = celebrate({
       .required()
       .min(2)
       .max(30)
-      .message(
-        'Имя пользователя должно быть заполнено и содержать не менее 2 и не более 30 миволов'
-      ),
+      .message(VALIDATION_MESSAGES.USER),
     email: Joi.string()
       .required()
       .email()
-      .message('Поле email должно быть заполнено'),
+      .message(VALIDATION_MESSAGES.EMAIL.EMPTY),
   }),
 })
 
 const validationId = (schema = 'movieId') =>
   celebrate({
     params: Joi.object().keys({
-      [schema]: Joi.number()
+      [schema]: Joi.string()
         .required()
-        .min(1)
-        .message('Передан некорректный id фильма'),
+        .custom((value, helpers) => {
+          if (!Types.ObjectId.isValid(value)) {
+            return helpers.message(VALIDATION_MESSAGES.MOVIE_ID.BAD)
+          }
+          return value
+        }),
     }),
   })
 
 const validationCreateMovie = celebrate({
   body: Joi.object().keys({
-    country: Joi.string().required().min(1).message(errorMsg('страна')),
-    director: Joi.string().required().min(1).message(errorMsg('режиссёр')),
-    duration: Joi.number().required().min(1).message(errorMsg('длительность')),
-    year: Joi.string().required().min(1).message(errorMsg('год выпуска')),
-    description: Joi.string().required().min(1).message(errorMsg('описание')),
+    country: Joi.string()
+      .required()
+      .min(1)
+      .message(VALIDATION_MESSAGES.COUNTRY),
+    director: Joi.string()
+      .required()
+      .min(1)
+      .message(VALIDATION_MESSAGES.DIRECTOR),
+    duration: Joi.number()
+      .required()
+      .min(1)
+      .message(VALIDATION_MESSAGES.DURATION),
+    year: Joi.string().required().min(1).message(VALIDATION_MESSAGES.YEAR),
+    description: Joi.string()
+      .required()
+      .min(1)
+      .message(VALIDATION_MESSAGES.DESCRIPTION),
     image: Joi.string()
       .required()
       .custom(validationUrl)
-      .message(errorMsg('постер')),
+      .message(VALIDATION_MESSAGES.POSTER),
     trailerLink: Joi.string()
       .required()
       .custom(validationUrl)
-      .message(errorMsg('трейлер')),
+      .message(VALIDATION_MESSAGES.TRAILER),
     thumbnail: Joi.string()
       .required()
       .custom(validationUrl)
-      .message(errorMsg('"thumbnail"')),
-    movieId: Joi.number().required().min(1).message(errorMsg('"movieId"')),
-    nameRU: Joi.string()
+      .message(VALIDATION_MESSAGES.THUMBNAIL),
+    movieId: Joi.string()
       .required()
-      .min(1)
-      .message(errorMsg('русское название фильма')),
-    nameEN: Joi.string()
-      .required()
-      .min(1)
-      .message(errorMsg('английское название фильма')),
+      .custom((value, helpers) => {
+        if (!Types.ObjectId.isValid(value)) {
+          return helpers.message(VALIDATION_MESSAGES.MOVIE_ID.BAD)
+        }
+        return value
+      }),
+    nameRU: Joi.string().required().min(1).message(VALIDATION_MESSAGES.NAME_RU),
+    nameEN: Joi.string().required().min(1).message(VALIDATION_MESSAGES.NAME_EN),
   }),
 })
 

@@ -1,9 +1,9 @@
-const { SERVER_ERROR } = require('../utils/errors')
+const { DEFAULT_ERROR_MESSAGES } = require('../utils/consts')
 
 module.exports = (err, req, res, next) => {
-  const { statusCode = SERVER_ERROR, message } = err
+  const { statusCode = 500, message } = err
   res.status(statusCode).send({
-    message: statusCode === SERVER_ERROR ? 'Internal Server Error' : message,
+    message: statusCode === 500 ? DEFAULT_ERROR_MESSAGES.SERVER_ERROR : message,
   })
   next()
 }

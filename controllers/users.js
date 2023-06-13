@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Users = require('../models/user')
 const { handleError } = require('../utils/errors')
+const { JWT_SECRET } = require('../utils/config')
+const { USER_MESSAGE } = require('../utils/consts')
 
 const createUser = (req, res, next) => {
   const { name, email, password } = req.body
@@ -42,24 +44,16 @@ const getCurrentUser = (req, res, next) =>
 
 const login = (req, res, next) => {
   const { email, password } = req.body
-  const { NODE_ENV, JWT_SECRET } = process.env
-
   return Users.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        NODE_ENV === 'production'
-          ? JWT_SECRET
-          : '85353ab2edfacd45adcb8a9b27c3187df2663355dba48fdb23d0c2184246881a',
-        { expiresIn: '7d' }
-      )
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' })
       res
         .cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7,
           httpOnly: true,
           sameSite: true,
         })
-        .send({ message: `Welcome back, ${user.name}` })
+        .send({ message: `${USER_MESSAGE.ON_LOGIN}, ${user.name}` })
     })
     .catch((err) => handleError(err, next))
 }
@@ -70,7 +64,7 @@ const logout = (req, res) =>
       httpOnly: true,
       sameSite: true,
     })
-    .send({ message: 'Successfully signed out ' })
+    .send({ message: USER_MESSAGE.ON_LOGOUT })
 
 module.exports = {
   createUser,
