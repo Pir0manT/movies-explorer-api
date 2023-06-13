@@ -95,14 +95,7 @@ const validationCreateMovie = celebrate({
       .required()
       .custom(validationUrl)
       .message(VALIDATION_MESSAGES.THUMBNAIL),
-    movieId: Joi.string()
-      .required()
-      .custom((value, helpers) => {
-        if (!Types.ObjectId.isValid(value)) {
-          return helpers.message(VALIDATION_MESSAGES.MOVIE_ID.BAD)
-        }
-        return value
-      }),
+    movieId: Joi.number().required(),
     nameRU: Joi.string().required().min(1).message(VALIDATION_MESSAGES.NAME_RU),
     nameEN: Joi.string().required().min(1).message(VALIDATION_MESSAGES.NAME_EN),
   }),

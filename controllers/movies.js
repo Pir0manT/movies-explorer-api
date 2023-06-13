@@ -18,16 +18,10 @@ const createMovie = (req, res, next) =>
 
 const deleteMovie = (req, res, next) => {
   const { movieId } = req.params
-  Movies.find({ movieId })
-    .populate('owner')
-    .then((movies) => {
-      const movieToDelete = movies.find((movie) =>
-        movie.owner._id.equals(req.user._id)
-      )
-      if (movieToDelete) {
-        return movieToDelete.deleteOne().then(() => {
-          res.send(movieToDelete)
-        })
+  Movies.findById({ movieId })
+    .then((movie) => {
+      if (movie.owner.toString() === req.user._id) {
+        return movie.deleteOne().then(() => res.send(movie))
       }
       throw new ForbiddenError()
     })
