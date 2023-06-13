@@ -18,7 +18,7 @@ const createMovie = (req, res, next) =>
 
 const deleteMovie = (req, res, next) => {
   const { movieId } = req.params
-  Movies.findById({ movieId })
+  Movies.findById(movieId)
     .then((movie) => {
       if (movie.owner.toString() === req.user._id) {
         return movie.deleteOne().then(() => res.send(movie))
